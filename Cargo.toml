@@ -1,0 +1,12 @@
+[package]
+name = "ds-ppte"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ctru-rs = {git = "https://github.com/rust3ds/ctru-rs"}
+ctru-sys = {git = "https://github.com/rust3ds/ctru-rs"}
+blockstackers_core = {path = "../buyo/blockstackers_core"}
+citro2d-sys = {path = "../citro2d-rs/citro2d-sys"}
+citro3d-sys = {path = "../citro3d-rs/citro3d-sys"}
+rand = "0.9.1"
