@@ -187,6 +187,7 @@ dependencies = [
  "citro3d-sys",
  "ctru-rs",
  "ctru-sys",
+ "libc",
  "rand 0.9.1",
 ]
 
