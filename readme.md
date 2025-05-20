@@ -1,4 +1,5 @@
 # port of ppte to 3ds
+- regular ppte repo at https://github.com/aerits/buyo
 - can you compile this?
     - no
     - i have modified citro3d-sys and citro2d-sys (https://git.sr.ht/~sheepy/citro2d-rs) to make them compile because they didn't compile for me.
