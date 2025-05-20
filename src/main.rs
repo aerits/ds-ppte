@@ -131,12 +131,12 @@ fn main() {
             }
             for (x, y, s) in game.get_controlled_block() {
                 let color = match s {
-                    blockstackers_core::Sprite::Wall => C2D_Color32(0, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoRed => C2D_Color32(255, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoBlue => C2D_Color32(0, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoYellow => C2D_Color32(255, 255, 0, 255),
-                    blockstackers_core::Sprite::BuyoPurple => C2D_Color32(255, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoGreen => C2D_Color32(0, 255, 0, 255),
+                    blockstackers_core::Sprite::Wall => C2D_Color32(0, 0, 0, 100),
+                    blockstackers_core::Sprite::BuyoRed => C2D_Color32(255, 0, 0, 100),
+                    blockstackers_core::Sprite::BuyoBlue => C2D_Color32(0, 0, 255, 100),
+                    blockstackers_core::Sprite::BuyoYellow => C2D_Color32(255, 255, 0, 100),
+                    blockstackers_core::Sprite::BuyoPurple => C2D_Color32(255, 0, 255, 100),
+                    blockstackers_core::Sprite::BuyoGreen => C2D_Color32(0, 255, 0, 100),
                     _ => panic!(),
                 };
                 C2D_DrawCircleSolid(x as f32 * 16f32, y as f32 * 16f32, 0f32, 8f32, color);
