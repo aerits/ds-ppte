@@ -6,15 +6,18 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-use blockstackers_core::blockstacker::{BlockStacker, Tuning};
+use blockstackers_core::blockstacker::{self, BlockStacker, Tuning};
 use blockstackers_core::buyo_game::BuyoBuyo;
 use blockstackers_core::randomizer::Randomizer;
 use blockstackers_core::tet::Tet;
+use blockstackers_core::Sprite;
 use citro2d_sys::*;
 use citro3d_sys::*;
 use ctru::prelude::*;
 use ctru::services::gfx::{Flush, RawFrameBuffer, Screen, Swap};
 use rand::Rng;
+
+mod menu;
 
 fn main() {
     let gfx = Gfx::new().expect("Couldn't obtain GFX controller");
@@ -34,13 +37,20 @@ fn main() {
         C2D_CreateScreenTarget(ctru_sys::GFX_TOP, ctru_sys::GFX_LEFT)
     };
 
-    let mut color = unsafe { C2D_Color32(255, 255, 255, 0) };
-
-    let mut game = BuyoBuyo::new(
-        6,
-        12,
+    let color = unsafe { C2D_Color32(255, 255, 255, 0) };
+    let i: i8 = rng.random();
+    let game;
+    if i >= 0 {
+        game = "tet"
+    } else {
+        game = "buyo"
+    }
+    let mut game: Box<dyn BlockStacker> = <dyn BlockStacker>::new(
+        game,
+        10,
+        24,
         Randomizer::new(
-            4,
+            7,
             SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
@@ -118,40 +128,16 @@ fn main() {
             C2D_DrawText(text.as_ptr(), 0, 120.0, 30.0, 0.0, 1.0, 1.0);
 
             for (v, s) in game.get_board() {
-                let color = match s {
-                    blockstackers_core::Sprite::Wall => C2D_Color32(0, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoRed => C2D_Color32(255, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoBlue => C2D_Color32(0, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoYellow => C2D_Color32(255, 255, 0, 255),
-                    blockstackers_core::Sprite::BuyoPurple => C2D_Color32(255, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoGreen => C2D_Color32(0, 255, 0, 255),
-                    _ => panic!(),
-                };
-                C2D_DrawCircleSolid(v.x as f32 * 16f32, v.y as f32 * 16f32, 0f32, 8f32, color);
+                let color = get_sprite(s);
+                C2D_DrawCircleSolid(v.x as f32 * 8f32, v.y as f32 * 8f32, 0f32, 4f32, color);
             }
             for (x, y, s) in game.get_controlled_block() {
-                let color = match s {
-                    blockstackers_core::Sprite::Wall => C2D_Color32(0, 0, 0, 100),
-                    blockstackers_core::Sprite::BuyoRed => C2D_Color32(255, 0, 0, 100),
-                    blockstackers_core::Sprite::BuyoBlue => C2D_Color32(0, 0, 255, 100),
-                    blockstackers_core::Sprite::BuyoYellow => C2D_Color32(255, 255, 0, 100),
-                    blockstackers_core::Sprite::BuyoPurple => C2D_Color32(255, 0, 255, 100),
-                    blockstackers_core::Sprite::BuyoGreen => C2D_Color32(0, 255, 0, 100),
-                    _ => panic!(),
-                };
-                C2D_DrawCircleSolid(x as f32 * 16f32, y as f32 * 16f32, 0f32, 8f32, color);
+                let color = get_sprite(s);
+                C2D_DrawCircleSolid(x as f32 * 8f32, y as f32 * 8f32, 0f32, 4f32, color);
             }
             for (v, s) in game.next_queue() {
-                let color = match s {
-                    blockstackers_core::Sprite::Wall => C2D_Color32(0, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoRed => C2D_Color32(255, 0, 0, 255),
-                    blockstackers_core::Sprite::BuyoBlue => C2D_Color32(0, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoYellow => C2D_Color32(255, 255, 0, 255),
-                    blockstackers_core::Sprite::BuyoPurple => C2D_Color32(255, 0, 255, 255),
-                    blockstackers_core::Sprite::BuyoGreen => C2D_Color32(0, 255, 0, 255),
-                    _ => panic!(),
-                };
-                C2D_DrawCircleSolid(v.x as f32 * 16f32 + 200.0, v.y as f32 * 16f32 + 100.0, 0f32, 8f32, color);
+                let color = get_sprite(s);
+                C2D_DrawCircleSolid(v.x as f32 * 8f32 + 200.0, v.y as f32 * 8f32 + 100.0, 0f32, 4f32, color);
             }
 
             // println!("{}", C3D_GetDrawingTime());
@@ -162,5 +148,31 @@ fn main() {
     }
     unsafe {
         C2D_TextBufDelete(buf);
+    }
+}
+
+fn get_sprite(s: Sprite) -> ctru_sys::u32_ {
+    
+    unsafe {
+        let red = C2D_Color32(255, 0, 0, 255);
+        let blue = C2D_Color32(0, 0, 255, 255);
+        let yellow = C2D_Color32(255, 255, 0, 255);
+        let purple = C2D_Color32(255, 0, 255, 255);
+        let green = C2D_Color32(0, 255, 0, 255);
+        match s {
+            Sprite::Wall => C2D_Color32(0, 0, 0, 255),
+            Sprite::BuyoRed => red,
+            Sprite::BuyoBlue => blue,
+            Sprite::BuyoYellow => yellow,
+            Sprite::BuyoPurple => purple,
+            Sprite::BuyoGreen => green,
+            Sprite::TetT => purple,
+            Sprite::TetI => blue,
+            Sprite::TetO => yellow,
+            Sprite::TetJ => blue,
+            Sprite::TetL => C2D_Color32(255, 165, 0, 255),
+            Sprite::TetS => red,
+            Sprite::TetZ => green,
+        }
     }
 }
