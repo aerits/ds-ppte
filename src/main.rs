@@ -47,9 +47,9 @@ fn main() {
     //     game = "buyo"
     // }
     let mut game: Box<dyn BlockStacker> = <dyn BlockStacker>::new(
-        "buyo",
-        6,
-        12,
+        "tet",
+        10,
+        24,
         Randomizer::new(
             7,
             SystemTime::now()
@@ -59,6 +59,8 @@ fn main() {
         ),
         Tuning::new(),
     );
+    game.get_mut_tuning().fall_skip = 0.1;
+    game.get_mut_tuning().fall_speed = 400;
     let mut pieces_placed = 1;
     let time_start = Instant::now();
     let mut time_last_update = Instant::now();
@@ -76,11 +78,17 @@ fn main() {
 
         if hid.keys_held().contains(KeyPad::DPAD_DOWN) {
             circle_pos.1 += 10; update = true;
+            game.get_mut_tuning().fall_speed = 0;
+            game.get_mut_tuning().fall_skip = 24.0;
+        }
+        if hid.keys_up().contains(KeyPad::DPAD_DOWN) {
+            circle_pos.1 += 10; update = true;
+            game.get_mut_tuning().fall_speed = 400;
+            game.get_mut_tuning().fall_skip = 0.2;
         }
         if hid.keys_down().contains(KeyPad::DPAD_UP) {
             circle_pos.1 -= 10; update = true;
             game.hard_drop();
-            time_last_update = Instant::now();
         }
         if hid.keys_down().contains(KeyPad::DPAD_LEFT) {
             circle_pos.0 -= 10; update = true;
@@ -126,8 +134,8 @@ fn main() {
             }
             let score = game.total_score();
             let tuning = game.get_mut_tuning();
-            tuning.fall_speed = 100;
-            tuning.fall_skip = 0.2 + pieces_placed as f32 / 100.0;
+            // tuning.fall_speed = 100;
+            // tuning.fall_skip = 0.2 + pieces_placed as f32 / 100.0;
         }
 
         if !update {
@@ -153,7 +161,7 @@ fn main() {
             );
             C2D_TextOptimize(text.as_mut_ptr());
             C2D_DrawText(text.as_ptr(), 0, 120.0, 30.0, 0.0, 1.0, 1.0);
-            const RADIUS: f32 = 8.0;
+            const RADIUS: f32 = 4.0;
             for (v, s) in game.get_board() {
                 let color = get_sprite(s);
                 C2D_DrawCircleSolid(v.x as f32 * 2.0 * RADIUS, v.y as f32 * 2.0 * RADIUS, 0f32, RADIUS, color);
@@ -186,6 +194,7 @@ fn get_sprite(s: Sprite) -> ctru_sys::u32_ {
         let yellow = C2D_Color32(255, 255, 0, 255);
         let purple = C2D_Color32(255, 0, 255, 255);
         let green = C2D_Color32(0, 255, 0, 255);
+        let transparent = |color| (color & 0xFFFFFF00) | 100;
         match s {
             Sprite::Wall => C2D_Color32(0, 0, 0, 255),
             Sprite::BuyoRed => red,
@@ -200,6 +209,13 @@ fn get_sprite(s: Sprite) -> ctru_sys::u32_ {
             Sprite::TetL => C2D_Color32(255, 165, 0, 255),
             Sprite::TetS => red,
             Sprite::TetZ => green,
+            Sprite::TetGhostT => transparent(purple),
+            Sprite::TetGhostI => transparent(blue),
+            Sprite::TetGhostO => transparent(yellow),
+            Sprite::TetGhostJ => transparent(blue),
+            Sprite::TetGhostL => transparent(C2D_Color32(255, 165, 0, 255)),
+            Sprite::TetGhostS => transparent(red),
+            Sprite::TetGhostZ => transparent(green),
         }
     }
 }

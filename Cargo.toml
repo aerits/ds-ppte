@@ -11,3 +11,6 @@ citro2d-sys = {path = "../citro2d-rs/citro2d-sys"}
 citro3d-sys = {path = "../citro3d-rs/citro3d-sys"}
 rand = "0.9.1"
 libc = "0.2.172"
+
+[build-dependencies]
+bindgen = "0.71.0"
